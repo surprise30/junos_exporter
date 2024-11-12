@@ -125,7 +125,6 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 		if err != nil {
 			log.Errorf("unable to convert number of adjanceis: %q", i.InterfaceLevelData.AdjacencyCount)
 		}
-		//labels = deleteElement(labels, 2)
 		ch <- prometheus.MustNewConstMetric(adjCountDesc, prometheus.CounterValue, float64(c), labels...)
 	}
 }
