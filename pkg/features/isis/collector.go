@@ -129,6 +129,6 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 	}
 }
 
-func deleteElement(slice []string, index int) []string {
+/*func deleteElement(slice []string, index int) []string {
 	return append(slice[:index], slice[index+1:]...)
-}
+}*/
