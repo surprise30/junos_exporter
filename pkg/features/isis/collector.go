@@ -3,7 +3,6 @@
 package isis
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"strconv"
 	"strings"
@@ -53,7 +52,6 @@ func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect collects metrics from JunOS
 func (c *isisCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	fmt.Printf("inside 4 ")
 	adjancies, err := c.isisAdjancies(client)
 	if err != nil {
 		return err
@@ -121,14 +119,17 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 		}
 		labels := append(labelValues,
 			i.InterfaceName,
-			"unknown",
+			"",
 			i.InterfaceLevelData.Level)
 		c, err := strconv.Atoi(i.InterfaceLevelData.AdjacencyCount)
 		if err != nil {
 			log.Errorf("unable to convert number of adjanceis: %q", i.InterfaceLevelData.AdjacencyCount)
 		}
+		//labels = deleteElement(labels, 2)
 		ch <- prometheus.MustNewConstMetric(adjCountDesc, prometheus.CounterValue, float64(c), labels...)
-
 	}
+}
 
+func deleteElement(slice []string, index int) []string {
+	return append(slice[:index], slice[index+1:]...)
 }
