@@ -26,32 +26,12 @@ type interfaces struct {
 	IsisInterfaceInformation struct {
 		Text          string `xml:",chardata"`
 		Xmlns         string `xml:"xmlns,attr"`
-		Style         string `xml:"style,attr"`
 		IsisInterface []struct {
-			Text                        string `xml:",chardata"`
-			Heading                     string `xml:"heading,attr"`
-			InterfaceName               string `xml:"interface-name"`
-			InterfaceIndex              string `xml:"interface-index"`
-			InterfaceStateValue         string `xml:"interface-state-value"`
-			CircuitID                   string `xml:"circuit-id"`
-			CircuitType                 string `xml:"circuit-type"`
-			LspInterval                 string `xml:"lsp-interval"`
-			CsnpInterval                string `xml:"csnp-interval"`
-			HelloPadding                string `xml:"hello-padding"`
-			MaxHelloSize                string `xml:"max-hello-size"`
-			AdjacencyAdvertisement      string `xml:"adjacency-advertisement"`
-			IsisLayer2MapEnabled        string `xml:"isis-layer2-map-enabled"`
-			InterfaceGroupHolddownDelay string `xml:"interface-group-holddown-delay"`
-			InterfaceGroupHolddownLeft  string `xml:"interface-group-holddown-left"`
-			InterfaceLevelData          struct {
-				Text              string `xml:",chardata"`
-				Level             string `xml:"level"`
-				AdjacencyCount    string `xml:"adjacency-count"`
-				InterfacePriority string `xml:"interface-priority"`
-				Metric            string `xml:"metric"`
-				HelloTime         string `xml:"hello-time"`
-				Holdtime          string `xml:"holdtime"`
-				Passive           string `xml:"passive"`
+			InterfaceName      string `xml:"interface-name"`
+			InterfaceLevelData struct {
+				Level          string `xml:"level"`
+				AdjacencyCount string `xml:"adjacency-count"`
+				Passive        string `xml:"passive"`
 			} `xml:"interface-level-data"`
 		} `xml:"isis-interface"`
 	} `xml:"isis-interface-information"`

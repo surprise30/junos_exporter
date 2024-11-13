@@ -3,6 +3,7 @@
 package isis
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"strconv"
 	"strings"
@@ -27,6 +28,7 @@ func init() {
 	totalCount = prometheus.NewDesc(prefix+"total_count", "Number of ISIS Adjacencies", l, nil)
 	l = append(l, "interface_name", "system_name", "level")
 	adjState = prometheus.NewDesc(prefix+"adjacency_state", "The ISIS Adjacency state (0 = DOWN, 1 = UP, 2 = NEW, 3 = ONE-WAY, 4 =INITIALIZING , 5 = REJECTED)", l, nil)
+	l = deleteElement(l, 2)
 	adjCountDesc = prometheus.NewDesc(prefix+"adjacency_count", "The number of ISIS adjacencies for an interface", l, nil)
 }
 
@@ -83,12 +85,12 @@ func (c *isisCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 		}
 	}
 
-	var i interfaces
-	err = client.RunCommandAndParse("show isis interface extensive", &i)
+	var ifas interfaces
+	err = client.RunCommandAndParse("show isis interface extensive", &ifas)
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show isis interface extensive'")
 	}
-	c.isisInterfaces(i, ch, labelValues)
+	c.isisInterfaces(ifas, ch, labelValues)
 	return nil
 }
 
@@ -117,18 +119,22 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 		if strings.ToLower(i.InterfaceLevelData.Passive) == "passive" {
 			continue
 		}
+		fmt.Println("labels before append are %s", labelValues)
 		labels := append(labelValues,
 			i.InterfaceName,
-			"",
+			/*"", */
 			i.InterfaceLevelData.Level)
+		fmt.Println("labels after append are %s", labels)
 		c, err := strconv.Atoi(i.InterfaceLevelData.AdjacencyCount)
 		if err != nil {
 			log.Errorf("unable to convert number of adjanceis: %q", i.InterfaceLevelData.AdjacencyCount)
+			return
 		}
-		ch <- prometheus.MustNewConstMetric(adjCountDesc, prometheus.CounterValue, float64(c), labels...)
+		fmt.Printf("%d", c)
+		//ch <- prometheus.MustNewConstMetric(adjCountDesc, prometheus.CounterValue, float64(c), labels...)
 	}
 }
 
-/*func deleteElement(slice []string, index int) []string {
+func deleteElement(slice []string, index int) []string {
 	return append(slice[:index], slice[index+1:]...)
-}*/
+}
