@@ -9,26 +9,25 @@ import (
 
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
 )
 
 const prefix string = "junos_isis_"
 
 var (
-	upCount      *prometheus.Desc
-	totalCount   *prometheus.Desc
-	adjState     *prometheus.Desc
-	adjCountDesc *prometheus.Desc
+	upCountDesc    *prometheus.Desc
+	totalCountDesc *prometheus.Desc
+	adjStateDesc   *prometheus.Desc
+	adjCountDesc   *prometheus.Desc
 )
 
 func init() {
 	l := []string{"target"}
-	upCount = prometheus.NewDesc(prefix+"up_count", "Number of ISIS Adjacencies in state up", l, nil)
-	totalCount = prometheus.NewDesc(prefix+"total_count", "Number of ISIS Adjacencies", l, nil)
+	upCountDesc = prometheus.NewDesc(prefix+"up_count", "Number of ISIS Adjacencies in state up", l, nil)
+	totalCountDesc = prometheus.NewDesc(prefix+"total_count", "Number of ISIS Adjacencies", l, nil)
 	l = append(l, "interface_name", "system_name", "level")
-	adjState = prometheus.NewDesc(prefix+"adjacency_state", "The ISIS Adjacency state (0 = DOWN, 1 = UP, 2 = NEW, 3 = ONE-WAY, 4 =INITIALIZING , 5 = REJECTED)", l, nil)
-	lablesForInterfaceMetrics := []string{"target", "interface_name", "level"}
-	adjCountDesc = prometheus.NewDesc(prefix+"adjacency_count", "The number of ISIS adjacencies for an interface", lablesForInterfaceMetrics, nil)
+	adjStateDesc = prometheus.NewDesc(prefix+"adjacency_state", "The ISIS Adjacency state (0 = DOWN, 1 = UP, 2 = NEW, 3 = ONE-WAY, 4 =INITIALIZING , 5 = REJECTED)", l, nil)
+	interfaceMetricsLabels := []string{"target", "interface_name", "level"}
+	adjCountDesc = prometheus.NewDesc(prefix+"adjacency_count", "The number of ISIS adjacencies for an interface", interfaceMetricsLabels, nil)
 }
 
 type isisCollector struct {
@@ -46,8 +45,8 @@ func (*isisCollector) Name() string {
 
 // Describe describes the metrics
 func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- upCount
-	ch <- totalCount
+	ch <- upCountDesc
+	ch <- totalCountDesc
 	ch <- adjCountDesc
 }
 
@@ -58,8 +57,8 @@ func (c *isisCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 		return err
 	}
 
-	ch <- prometheus.MustNewConstMetric(upCount, prometheus.GaugeValue, adjancies.Up, labelValues...)
-	ch <- prometheus.MustNewConstMetric(totalCount, prometheus.GaugeValue, adjancies.Total, labelValues...)
+	ch <- prometheus.MustNewConstMetric(upCountDesc, prometheus.GaugeValue, adjancies.Up, labelValues...)
+	ch <- prometheus.MustNewConstMetric(totalCountDesc, prometheus.GaugeValue, adjancies.Total, labelValues...)
 
 	if adjancies.Adjacencies != nil {
 		for _, adj := range adjancies.Adjacencies {
@@ -80,7 +79,7 @@ func (c *isisCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 				state = 5.0
 			}
 
-			ch <- prometheus.MustNewConstMetric(adjState, prometheus.GaugeValue, state, localLabelvalues...)
+			ch <- prometheus.MustNewConstMetric(adjStateDesc, prometheus.GaugeValue, state, localLabelvalues...)
 		}
 	}
 
@@ -121,11 +120,7 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 		labels := append(labelValues,
 			i.InterfaceName,
 			i.InterfaceLevelData.Level)
-		c, err := strconv.Atoi(i.InterfaceLevelData.AdjacencyCount)
-		if err != nil {
-			log.Errorf("unable to convert number of adjanceis: %q", i.InterfaceLevelData.AdjacencyCount)
-			return
-		}
+		c := i.InterfaceLevelData.AdjacencyCount
 		ch <- prometheus.MustNewConstMetric(adjCountDesc, prometheus.CounterValue, float64(c), labels...)
 	}
 }

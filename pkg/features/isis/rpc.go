@@ -30,7 +30,7 @@ type interfaces struct {
 			InterfaceName      string `xml:"interface-name"`
 			InterfaceLevelData struct {
 				Level          string `xml:"level"`
-				AdjacencyCount string `xml:"adjacency-count"`
+				AdjacencyCount int64  `xml:"adjacency-count"`
 				Passive        string `xml:"passive"`
 			} `xml:"interface-level-data"`
 		} `xml:"isis-interface"`
