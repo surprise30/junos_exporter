@@ -14,10 +14,14 @@ import (
 const prefix string = "junos_isis_"
 
 var (
-	upCountDesc    *prometheus.Desc
-	totalCountDesc *prometheus.Desc
-	adjStateDesc   *prometheus.Desc
-	adjCountDesc   *prometheus.Desc
+	upCountDesc       *prometheus.Desc
+	totalCountDesc    *prometheus.Desc
+	adjStateDesc      *prometheus.Desc
+	adjCountDesc      *prometheus.Desc
+	adjPriorityDesc   *prometheus.Desc
+	adjMetricDesc     *prometheus.Desc
+	adjHelloTimerDesc *prometheus.Desc
+	adjHoldTimerDesc  *prometheus.Desc
 )
 
 func init() {
@@ -28,6 +32,10 @@ func init() {
 	adjStateDesc = prometheus.NewDesc(prefix+"adjacency_state", "The ISIS Adjacency state (0 = DOWN, 1 = UP, 2 = NEW, 3 = ONE-WAY, 4 =INITIALIZING , 5 = REJECTED)", l, nil)
 	interfaceMetricsLabels := []string{"target", "interface_name", "level"}
 	adjCountDesc = prometheus.NewDesc(prefix+"adjacency_count", "The number of ISIS adjacencies for an interface", interfaceMetricsLabels, nil)
+	adjPriorityDesc = prometheus.NewDesc(prefix+"adjacency_priority", "The ISIS adjacency priority", interfaceMetricsLabels, nil)
+	adjMetricDesc = prometheus.NewDesc(prefix+"adjacency_metric", "The ISIS adjacency metric", interfaceMetricsLabels, nil)
+	adjHelloTimerDesc = prometheus.NewDesc(prefix+"adjacency_hello_timer", "The ISIS adjacency hello timer", interfaceMetricsLabels, nil)
+	adjHoldTimerDesc = prometheus.NewDesc(prefix+"adjacency_hold_timer", "The ISIS adjacency hold timer", interfaceMetricsLabels, nil)
 }
 
 type isisCollector struct {
@@ -48,6 +56,10 @@ func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- upCountDesc
 	ch <- totalCountDesc
 	ch <- adjCountDesc
+	ch <- adjPriorityDesc
+	ch <- adjMetricDesc
+	ch <- adjHelloTimerDesc
+	ch <- adjHoldTimerDesc
 }
 
 // Collect collects metrics from JunOS
@@ -120,7 +132,10 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 		labels := append(labelValues,
 			i.InterfaceName,
 			i.InterfaceLevelData.Level)
-		c := i.InterfaceLevelData.AdjacencyCount
-		ch <- prometheus.MustNewConstMetric(adjCountDesc, prometheus.CounterValue, float64(c), labels...)
+		ch <- prometheus.MustNewConstMetric(adjCountDesc, prometheus.CounterValue, i.InterfaceLevelData.AdjacencyCount, labels...)
+		ch <- prometheus.MustNewConstMetric(adjPriorityDesc, prometheus.GaugeValue, i.InterfaceLevelData.InterfacePriority, labels...)
+		ch <- prometheus.MustNewConstMetric(adjMetricDesc, prometheus.GaugeValue, i.InterfaceLevelData.Metric, labels...)
+		ch <- prometheus.MustNewConstMetric(adjHelloTimerDesc, prometheus.GaugeValue, i.InterfaceLevelData.HelloTime, labels...)
+		ch <- prometheus.MustNewConstMetric(adjHoldTimerDesc, prometheus.GaugeValue, i.InterfaceLevelData.HoldTime, labels...)
 	}
 }

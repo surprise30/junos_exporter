@@ -29,9 +29,13 @@ type interfaces struct {
 		IsisInterface []struct {
 			InterfaceName      string `xml:"interface-name"`
 			InterfaceLevelData struct {
-				Level          string `xml:"level"`
-				AdjacencyCount int64  `xml:"adjacency-count"`
-				Passive        string `xml:"passive"`
+				Level             string  `xml:"level"`
+				AdjacencyCount    float64 `xml:"adjacency-count"`
+				InterfacePriority float64 `xml:"interface-priority"`
+				Metric            float64 `xml:"metric"`
+				HelloTime         float64 `xml:"hello-time"`
+				HoldTime          float64 `xml:"holdtime"`
+				Passive           string  `xml:"passive"`
 			} `xml:"interface-level-data"`
 		} `xml:"isis-interface"`
 	} `xml:"isis-interface-information"`
