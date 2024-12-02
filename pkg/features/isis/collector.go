@@ -3,12 +3,11 @@
 package isis
 
 import (
+	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 	"strings"
-
-	"github.com/czerwonk/junos_exporter/pkg/collector"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 const prefix string = "junos_isis_"
@@ -22,13 +21,22 @@ var (
 	adjMetricDesc     *prometheus.Desc
 	adjHelloTimerDesc *prometheus.Desc
 	adjHoldTimerDesc  *prometheus.Desc
+	LSPIntervalDesc   *prometheus.Desc
+	CNMPIntervalDesc  *prometheus.Desc
+	helloPaddingDesc  *prometheus.Desc
+	maxHelloSizeDesc  *prometheus.Desc
 )
 
 func init() {
 	l := []string{"target"}
 	upCountDesc = prometheus.NewDesc(prefix+"up_count", "Number of ISIS Adjacencies in state up", l, nil)
 	totalCountDesc = prometheus.NewDesc(prefix+"total_count", "Number of ISIS Adjacencies", l, nil)
-	l = append(l, "interface_name", "system_name", "level")
+	l = append(l, "interface_name")
+	LSPIntervalDesc = prometheus.NewDesc(prefix+"lsp_interval", "The ISIS LSP interval", l, nil)
+	CNMPIntervalDesc = prometheus.NewDesc(prefix+"cnmp_interval", "The ISIS CNMP interval", l, nil)
+	helloPaddingDesc = prometheus.NewDesc(prefix+"hello_padding", "The ISIS hello padding (0 = UNKNOWN, 1 = LOOSE", l, nil)
+	maxHelloSizeDesc = prometheus.NewDesc(prefix+"max_hello_size", "The ISIS max hello size", l, nil)
+	l = append(l, "system_name", "level")
 	adjStateDesc = prometheus.NewDesc(prefix+"adjacency_state", "The ISIS Adjacency state (0 = DOWN, 1 = UP, 2 = NEW, 3 = ONE-WAY, 4 =INITIALIZING , 5 = REJECTED)", l, nil)
 	interfaceMetricsLabels := []string{"target", "interface_name", "level"}
 	adjCountDesc = prometheus.NewDesc(prefix+"adjacency_count", "The number of ISIS adjacencies for an interface", interfaceMetricsLabels, nil)
@@ -60,6 +68,10 @@ func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- adjMetricDesc
 	ch <- adjHelloTimerDesc
 	ch <- adjHoldTimerDesc
+	ch <- LSPIntervalDesc
+	ch <- CNMPIntervalDesc
+	ch <- helloPaddingDesc
+	ch <- maxHelloSizeDesc
 }
 
 // Collect collects metrics from JunOS
@@ -101,6 +113,8 @@ func (c *isisCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 		return errors.Wrap(err, "failed to run command 'show isis interface extensive'")
 	}
 	c.isisInterfaces(ifas, ch, labelValues)
+
+	c.additionalIsIsInterfaceMetrics(ifas, ch, labelValues)
 	return nil
 }
 
@@ -138,4 +152,31 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 		ch <- prometheus.MustNewConstMetric(adjHelloTimerDesc, prometheus.GaugeValue, i.InterfaceLevelData.HelloTime, labels...)
 		ch <- prometheus.MustNewConstMetric(adjHoldTimerDesc, prometheus.GaugeValue, i.InterfaceLevelData.HoldTime, labels...)
 	}
+}
+
+func (*isisCollector) additionalIsIsInterfaceMetrics(ifas interfaces, ch chan<- prometheus.Metric, labelValues []string) {
+	for _, i := range ifas.IsisInterfaceInformation.IsisInterface {
+		if strings.ToLower(i.InterfaceLevelData.Passive) == "passive" {
+			continue
+		}
+		labels := append(labelValues, i.InterfaceName)
+		helloPadding := getHelloPadding(i.HelloPadding)
+		ch <- prometheus.MustNewConstMetric(LSPIntervalDesc, prometheus.GaugeValue, i.LSPInterval, labels...)
+		ch <- prometheus.MustNewConstMetric(CNMPIntervalDesc, prometheus.GaugeValue, i.CSNPInterval, labels...)
+		ch <- prometheus.MustNewConstMetric(helloPaddingDesc, prometheus.GaugeValue, helloPadding, labels...)
+		ch <- prometheus.MustNewConstMetric(maxHelloSizeDesc, prometheus.GaugeValue, i.MaxHelloSize, labels...)
+	}
+}
+
+func getHelloPadding(h string) float64 {
+	var state float64
+	switch strings.ToLower(h) {
+	case "loose":
+		state = 1.0
+		break
+	default:
+		state = 0.0
+		break
+	}
+	return state
 }

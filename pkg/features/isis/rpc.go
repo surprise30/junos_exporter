@@ -27,7 +27,11 @@ type interfaces struct {
 		Text          string `xml:",chardata"`
 		Xmlns         string `xml:"xmlns,attr"`
 		IsisInterface []struct {
-			InterfaceName      string `xml:"interface-name"`
+			InterfaceName      string  `xml:"interface-name"`
+			LSPInterval        float64 `xml:"lsp-interval"`
+			CSNPInterval       float64 `xml:"csnp-interval"`
+			HelloPadding       string  `xml:"hello-padding"`
+			MaxHelloSize       float64 `xml:"max-hello-size"`
 			InterfaceLevelData struct {
 				Level             string  `xml:"level"`
 				AdjacencyCount    float64 `xml:"adjacency-count"`
