@@ -3,11 +3,11 @@
 package isis
 
 import (
+	"strconv"
+        "strings"
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"strconv"
-	"strings"
 )
 
 const prefix string = "junos_isis_"
