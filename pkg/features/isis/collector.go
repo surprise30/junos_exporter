@@ -4,10 +4,12 @@ package isis
 
 import (
 	"strconv"
-        "strings"
-	"github.com/czerwonk/junos_exporter/pkg/collector"
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/czerwonk/junos_exporter/pkg/collector"
 )
 
 const prefix string = "junos_isis_"
@@ -113,8 +115,6 @@ func (c *isisCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 		return errors.Wrap(err, "failed to run command 'show isis interface extensive'")
 	}
 	c.isisInterfaces(ifas, ch, labelValues)
-
-	c.additionalIsIsInterfaceMetrics(ifas, ch, labelValues)
 	return nil
 }
 
@@ -152,10 +152,8 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 		ch <- prometheus.MustNewConstMetric(adjHelloTimerDesc, prometheus.GaugeValue, i.InterfaceLevelData.HelloTime, labels...)
 		ch <- prometheus.MustNewConstMetric(adjHoldTimerDesc, prometheus.GaugeValue, i.InterfaceLevelData.HoldTime, labels...)
 	}
-}
 
-func (*isisCollector) additionalIsIsInterfaceMetrics(ifas interfaces, ch chan<- prometheus.Metric, labelValues []string) {
-	for _, i := range ifas.IsisInterfaceInformation.IsisInterface {
+	for _, i := range interfaces.IsisInterfaceInformation.IsisInterface {
 		if strings.ToLower(i.InterfaceLevelData.Passive) == "passive" {
 			continue
 		}
