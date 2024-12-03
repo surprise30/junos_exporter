@@ -3,11 +3,11 @@
 package isis
 
 import (
-	"strconv"
-        "strings"
 	"github.com/czerwonk/junos_exporter/pkg/collector"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
+	"strconv"
+	"strings"
 )
 
 const prefix string = "junos_isis_"
@@ -21,8 +21,8 @@ var (
 	adjMetricDesc     *prometheus.Desc
 	adjHelloTimerDesc *prometheus.Desc
 	adjHoldTimerDesc  *prometheus.Desc
-	LSPIntervalDesc   *prometheus.Desc
-	CNMPIntervalDesc  *prometheus.Desc
+	lspIntervalDesc   *prometheus.Desc
+	csnpIntervalDesc  *prometheus.Desc
 	helloPaddingDesc  *prometheus.Desc
 	maxHelloSizeDesc  *prometheus.Desc
 )
@@ -32,18 +32,18 @@ func init() {
 	upCountDesc = prometheus.NewDesc(prefix+"up_count", "Number of ISIS Adjacencies in state up", l, nil)
 	totalCountDesc = prometheus.NewDesc(prefix+"total_count", "Number of ISIS Adjacencies", l, nil)
 	l = append(l, "interface_name")
-	LSPIntervalDesc = prometheus.NewDesc(prefix+"lsp_interval", "The ISIS LSP interval", l, nil)
-	CNMPIntervalDesc = prometheus.NewDesc(prefix+"cnmp_interval", "The ISIS CNMP interval", l, nil)
-	helloPaddingDesc = prometheus.NewDesc(prefix+"hello_padding", "The ISIS hello padding (0 = UNKNOWN, 1 = LOOSE", l, nil)
-	maxHelloSizeDesc = prometheus.NewDesc(prefix+"max_hello_size", "The ISIS max hello size", l, nil)
+	lspIntervalDesc = prometheus.NewDesc(prefix+"lsp_interval_ms", "The ISIS LSP interval", l, nil)
+	csnpIntervalDesc = prometheus.NewDesc(prefix+"csnp_interval_seconds", "The ISIS CSNP interval", l, nil)
+	helloPaddingDesc = prometheus.NewDesc(prefix+"hello_padding", "The ISIS hello padding (0 = UNKNOWN, 1 = ADAPTIVE, 2 = DISABLE, 3 = LOOSE, 4 = STRICT)", l, nil)
+	maxHelloSizeDesc = prometheus.NewDesc(prefix+"max_hello_size_bytes", "The ISIS max hello size", l, nil)
 	l = append(l, "system_name", "level")
 	adjStateDesc = prometheus.NewDesc(prefix+"adjacency_state", "The ISIS Adjacency state (0 = DOWN, 1 = UP, 2 = NEW, 3 = ONE-WAY, 4 =INITIALIZING , 5 = REJECTED)", l, nil)
 	interfaceMetricsLabels := []string{"target", "interface_name", "level"}
 	adjCountDesc = prometheus.NewDesc(prefix+"adjacency_count", "The number of ISIS adjacencies for an interface", interfaceMetricsLabels, nil)
 	adjPriorityDesc = prometheus.NewDesc(prefix+"adjacency_priority", "The ISIS adjacency priority", interfaceMetricsLabels, nil)
 	adjMetricDesc = prometheus.NewDesc(prefix+"adjacency_metric", "The ISIS adjacency metric", interfaceMetricsLabels, nil)
-	adjHelloTimerDesc = prometheus.NewDesc(prefix+"adjacency_hello_timer", "The ISIS adjacency hello timer", interfaceMetricsLabels, nil)
-	adjHoldTimerDesc = prometheus.NewDesc(prefix+"adjacency_hold_timer", "The ISIS adjacency hold timer", interfaceMetricsLabels, nil)
+	adjHelloTimerDesc = prometheus.NewDesc(prefix+"adjacency_hello_timer_seconds", "The ISIS adjacency hello timer", interfaceMetricsLabels, nil)
+	adjHoldTimerDesc = prometheus.NewDesc(prefix+"adjacency_hold_timer_seconds", "The ISIS adjacency hold timer", interfaceMetricsLabels, nil)
 }
 
 type isisCollector struct {
@@ -68,8 +68,8 @@ func (*isisCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- adjMetricDesc
 	ch <- adjHelloTimerDesc
 	ch <- adjHoldTimerDesc
-	ch <- LSPIntervalDesc
-	ch <- CNMPIntervalDesc
+	ch <- lspIntervalDesc
+	ch <- csnpIntervalDesc
 	ch <- helloPaddingDesc
 	ch <- maxHelloSizeDesc
 }
@@ -161,22 +161,24 @@ func (*isisCollector) additionalIsIsInterfaceMetrics(ifas interfaces, ch chan<- 
 		}
 		labels := append(labelValues, i.InterfaceName)
 		helloPadding := getHelloPadding(i.HelloPadding)
-		ch <- prometheus.MustNewConstMetric(LSPIntervalDesc, prometheus.GaugeValue, i.LSPInterval, labels...)
-		ch <- prometheus.MustNewConstMetric(CNMPIntervalDesc, prometheus.GaugeValue, i.CSNPInterval, labels...)
+		ch <- prometheus.MustNewConstMetric(lspIntervalDesc, prometheus.GaugeValue, i.LSPInterval, labels...)
+		ch <- prometheus.MustNewConstMetric(csnpIntervalDesc, prometheus.GaugeValue, i.CSNPInterval, labels...)
 		ch <- prometheus.MustNewConstMetric(helloPaddingDesc, prometheus.GaugeValue, helloPadding, labels...)
 		ch <- prometheus.MustNewConstMetric(maxHelloSizeDesc, prometheus.GaugeValue, i.MaxHelloSize, labels...)
 	}
 }
 
 func getHelloPadding(h string) float64 {
-	var state float64
 	switch strings.ToLower(h) {
+	case "adaptive":
+		return 1.0
+	case "disable":
+		return 2.0
 	case "loose":
-		state = 1.0
-		break
+		return 3.0
+	case "strict":
+		return 4.0
 	default:
-		state = 0.0
-		break
+		return 0.0
 	}
-	return state
 }
