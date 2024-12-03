@@ -151,18 +151,12 @@ func (c *isisCollector) isisInterfaces(interfaces interfaces, ch chan<- promethe
 		ch <- prometheus.MustNewConstMetric(adjMetricDesc, prometheus.GaugeValue, i.InterfaceLevelData.Metric, labels...)
 		ch <- prometheus.MustNewConstMetric(adjHelloTimerDesc, prometheus.GaugeValue, i.InterfaceLevelData.HelloTime, labels...)
 		ch <- prometheus.MustNewConstMetric(adjHoldTimerDesc, prometheus.GaugeValue, i.InterfaceLevelData.HoldTime, labels...)
-	}
-
-	for _, i := range interfaces.IsisInterfaceInformation.IsisInterface {
-		if strings.ToLower(i.InterfaceLevelData.Passive) == "passive" {
-			continue
-		}
-		labels := append(labelValues, i.InterfaceName)
+		additionaLabels := append(labelValues, i.InterfaceName)
 		helloPadding := getHelloPadding(i.HelloPadding)
-		ch <- prometheus.MustNewConstMetric(lspIntervalDesc, prometheus.GaugeValue, i.LSPInterval, labels...)
-		ch <- prometheus.MustNewConstMetric(csnpIntervalDesc, prometheus.GaugeValue, i.CSNPInterval, labels...)
-		ch <- prometheus.MustNewConstMetric(helloPaddingDesc, prometheus.GaugeValue, helloPadding, labels...)
-		ch <- prometheus.MustNewConstMetric(maxHelloSizeDesc, prometheus.GaugeValue, i.MaxHelloSize, labels...)
+		ch <- prometheus.MustNewConstMetric(lspIntervalDesc, prometheus.GaugeValue, i.LSPInterval, additionaLabels...)
+		ch <- prometheus.MustNewConstMetric(csnpIntervalDesc, prometheus.GaugeValue, i.CSNPInterval, additionaLabels...)
+		ch <- prometheus.MustNewConstMetric(helloPaddingDesc, prometheus.GaugeValue, helloPadding, additionaLabels...)
+		ch <- prometheus.MustNewConstMetric(maxHelloSizeDesc, prometheus.GaugeValue, i.MaxHelloSize, additionaLabels...)
 	}
 }
 
