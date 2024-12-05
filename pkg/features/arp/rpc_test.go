@@ -48,7 +48,7 @@ func TestARP(t *testing.T) {
 </rpc-reply>
 `
 	var results results
-	// Parse the XML data for Interfaces
+	// Parse the XML data for ARP
 	err := xml.Unmarshal([]byte(resultsData), &results)
 	assert.NoError(t, err)
 
