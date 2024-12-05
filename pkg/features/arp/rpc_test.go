@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseXML(t *testing.T) {
+func TestARP(t *testing.T) {
 	resultsData := `
 <rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.2R2-S1.3/junos">
     <arp-table-information xmlns="http://xml.juniper.net/junos/23.2R0/junos-arp" junos:style="no-resolve">
@@ -87,7 +87,6 @@ func TestParseXML(t *testing.T) {
 	err := xml.Unmarshal([]byte(resultsData), &results)
 	assert.NoError(t, err)
 
-	// Validate the parsed data
 	assert.Len(t, results.ArpTableInformation.ArpTableEntry, 8)
 
 	map_expected := map[string]int64{
