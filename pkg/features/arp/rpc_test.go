@@ -12,74 +12,39 @@ func TestARP(t *testing.T) {
 <rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.2R2-S1.3/junos">
     <arp-table-information xmlns="http://xml.juniper.net/junos/23.2R0/junos-arp" junos:style="no-resolve">
         <arp-table-entry>
-            <mac-address>55:55:55:55:55:55</mac-address>
             <ip-address>55.55.55.55</ip-address>
             <interface-name>xe-0/0/5:0.0</interface-name>
-            <arp-table-entry-flags>
-                <none/>
-            </arp-table-entry-flags>
         </arp-table-entry>
         <arp-table-entry>
-            <mac-address>55:55:55:55:55:55</mac-address>
             <ip-address>55.55.55.55</ip-address>
             <interface-name>bme1.0</interface-name>
-            <arp-table-entry-flags>
-                <permanent/>
-            </arp-table-entry-flags>
         </arp-table-entry>
         <arp-table-entry>
-            <mac-address>55:55:55:55:55:55</mac-address>
             <ip-address>55.55.55.55</ip-address>
             <interface-name>bme0.0</interface-name>
-            <arp-table-entry-flags>
-                <permanent/>
-            </arp-table-entry-flags>
         </arp-table-entry>
         <arp-table-entry>
-            <mac-address>55:55:55:55:55:55</mac-address>
             <ip-address>55.55.55.55</ip-address>
             <interface-name>bme2.0</interface-name>
-            <arp-table-entry-flags>
-                <permanent/>
-            </arp-table-entry-flags>
         </arp-table-entry>
         <arp-table-entry>
-            <mac-address>55:55:55:55:55:55</mac-address>
             <ip-address>55.55.55.55</ip-address>
             <interface-name>xe-0/0/3:0.0</interface-name>
-            <arp-table-entry-flags>
-                <none/>
-            </arp-table-entry-flags>
         </arp-table-entry>
         <arp-table-entry>
-            <mac-address>55:55:55:55:55:55</mac-address>
             <ip-address>55.55.55.55</ip-address>
             <interface-name>xe-0/0/3:0.0</interface-name>
-            <arp-table-entry-flags>
-                <none/>
-            </arp-table-entry-flags>
         </arp-table-entry>  
         <arp-table-entry>
-            <mac-address>55:55:55:55:55:55</mac-address>
             <ip-address>55.55.55.55</ip-address>
             <interface-name>fxp0.0</interface-name>
-            <arp-table-entry-flags>
-                <none/>
-            </arp-table-entry-flags>
         </arp-table-entry>
         <arp-table-entry>
-            <mac-address>55:55:55:55:55:55</mac-address>
             <ip-address>55.55.55.55</ip-address>
             <interface-name>em1.32768</interface-name>
-            <arp-table-entry-flags>
-                <none/>
-            </arp-table-entry-flags>
         </arp-table-entry>
         <arp-entry-count>7</arp-entry-count>
     </arp-table-information>
-    <cli>
-        <banner></banner>
-    </cli>
 </rpc-reply>
 `
 	var results results
