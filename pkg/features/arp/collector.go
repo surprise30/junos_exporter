@@ -15,7 +15,7 @@ var (
 
 func init() {
 	l := []string{"target", "interface"}
-	arpEntriesCountDesc = prometheus.NewDesc(prefix+"arp_entries_count_per_interface", "Amount of ARP entries on an interface", l, nil)
+	arpEntriesCountDesc = prometheus.NewDesc(prefix+"entries", "Amount of ARP entries on an interface", l, nil)
 }
 
 type arpCollector struct{}
@@ -33,18 +33,21 @@ func (c *arpCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *arpCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
-	var arps results
-	err := client.RunCommandAndParse("show arp no-resolve", &arps)
+	var res results
+	err := client.RunCommandAndParse("show arp no-resolve", &res)
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show arp no-resolve'")
 	}
-	interfaces_map := make(map[string]float64)
-	for _, a := range arps.ArpTableInformation.ArpTableEntry {
-		interfaces_map[a.InterfaceName] += 1
+
+	interfaces := make(map[string]float64)
+	for _, a := range res.ArpTableInformation.ArpTableEntry {
+		interfaces[a.InterfaceName] += 1
 	}
-	for key, value := range interfaces_map {
+
+	for key, value := range interfaces {
 		labels := append(labelValues, key)
-		ch <- prometheus.MustNewConstMetric(arpEntriesCountDesc, prometheus.CounterValue, value, labels...)
+		ch <- prometheus.MustNewConstMetric(arpEntriesCountDesc, prometheus.GaugeValue, value, labels...)
 	}
+
 	return nil
 }

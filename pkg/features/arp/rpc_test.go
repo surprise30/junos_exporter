@@ -54,7 +54,7 @@ func TestARP(t *testing.T) {
 
 	assert.Len(t, results.ArpTableInformation.ArpTableEntry, 8)
 
-	map_expected := map[string]int64{
+	expected := map[string]int64{
 		"xe-0/0/5:0.0": 1,
 		"bme1.0":       1,
 		"bme0.0":       1,
@@ -63,12 +63,12 @@ func TestARP(t *testing.T) {
 		"fxp0.0":       1,
 		"em1.32768":    1,
 	}
-	map_in_test := make(map[string]float64)
+	inTest := make(map[string]float64)
 	for _, a := range results.ArpTableInformation.ArpTableEntry {
-		map_in_test[a.InterfaceName] += 1
+		inTest[a.InterfaceName] += 1
 	}
-	assert.Equal(t, len(map_expected), len(map_in_test))
-	for key, _ := range map_in_test {
-		assert.Equal(t, int64(map_expected[key]), int64(map_in_test[key]))
+	assert.Equal(t, len(expected), len(inTest))
+	for key, _ := range inTest {
+		assert.Equal(t, int64(expected[key]), int64(inTest[key]))
 	}
 }
