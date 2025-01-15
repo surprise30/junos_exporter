@@ -1,4 +1,8 @@
-type RpcReply struct {
+package ddosprotection
+
+import "encoding/xml"
+
+type results struct {
 	XMLName                  xml.Name `xml:"rpc-reply"`
 	Text                     string   `xml:",chardata"`
 	Junos                    string   `xml:"junos,attr"`

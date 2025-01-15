@@ -1,16 +1,7 @@
-package ddos
+package ddosprotection
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
-
-	"github.com/czerwonk/junos_exporter/pkg/collector"
-)
-
--protection
-
-import (
-	"strconv"
-	"strings"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
@@ -21,57 +12,55 @@ import (
 const prefix string = "junos_ddos_protection"
 
 var (
-	agpBandwidth   *prometheus.Desc
-	agpBurst   *prometheus.Desc
-	agpRecoverTime   *prometheus.Desc
-	agpEnabled   *prometheus.Desc
-	swiViolated   *prometheus.Desc
-	swiReceived   *prometheus.Desc
-	swiDropped   *prometheus.Desc
-	swiArrivalRate   *prometheus.Desc
-	swiMaxArrivalRate   *prometheus.Desc
-	reiBandwidth   *prometheus.Desc
-	reiBurst   *prometheus.Desc
-	reiEnabled   *prometheus.Desc
-	reiViolated   *prometheus.Desc
-	reiReceived   *prometheus.Desc
-	reiDropped   *prometheus.Desc
-	reiArrivalRate   *prometheus.Desc
-	reiMaxArrivalRate   *prometheus.Desc
-	reiDroppedIndividualPolicers   *prometheus.Desc
-	fpcBandwidth   *prometheus.Desc
-	fpcBurst   *prometheus.Desc
-	fpcEnabled   *prometheus.Desc
-	fpcHostboundQueue   *prometheus.Desc
-	fpcViolated   *prometheus.Desc
-	fpcReceived   *prometheus.Desc
-	fpcDropped   *prometheus.Desc
-	fpcArrivalRate   *prometheus.Desc
-	fpcMaxArrivalRate   *prometheus.Desc
-	fpcDroppedIndividualPolicers   *prometheus.Desc
-	fpcDroppedFlowSuppression   *prometheus.Desc
-	ipcBandwidth   *prometheus.Desc
-	ipcBurst   *prometheus.Desc
-	ipcPriority   *prometheus.Desc
-	ipcRecoverTime   *prometheus.Desc
-	ipcEnabled   *prometheus.Desc
-	ipcBypassAggregate   *prometheus.Desc
-	fdcStatus   *prometheus.Desc
-	fdcDetectionMode   *prometheus.Desc
-	fdcDetectTime   *prometheus.Desc
-	fdcRecoverTime   *prometheus.Desc
-	fdcTimeoutTime   *prometheus.Desc
-	fdcFALAggLevelSubscriberDM   *prometheus.Desc
-	fdcFALAggLevelSubscriberCM   *prometheus.Desc
-	fdcFALAggLevelSubscriberFR   *prometheus.Desc
-	fdcFALAggLevelLogicalInterfaceDM   *prometheus.Desc
-	fdcFALAggLevelLogicalInterfaceCM   *prometheus.Desc
-	fdcFALAggLevelLogicalInterfaceFR   *prometheus.Desc
-	fdcFALAggLevelPhysicalInterfaceDM   *prometheus.Desc
-	fdcFALAggLevelPhysicalInterfaceCM   *prometheus.Desc
-	fdcFALAggLevelPhysicalInterfaceFR   *prometheus.Desc
-
-
+	agpBandwidth                      *prometheus.Desc
+	agpBurst                          *prometheus.Desc
+	agpRecoverTime                    *prometheus.Desc
+	agpEnabled                        *prometheus.Desc
+	swiViolated                       *prometheus.Desc
+	swiReceived                       *prometheus.Desc
+	swiDropped                        *prometheus.Desc
+	swiArrivalRate                    *prometheus.Desc
+	swiMaxArrivalRate                 *prometheus.Desc
+	reiBandwidth                      *prometheus.Desc
+	reiBurst                          *prometheus.Desc
+	reiEnabled                        *prometheus.Desc
+	reiViolated                       *prometheus.Desc
+	reiReceived                       *prometheus.Desc
+	reiDropped                        *prometheus.Desc
+	reiArrivalRate                    *prometheus.Desc
+	reiMaxArrivalRate                 *prometheus.Desc
+	reiDroppedIndividualPolicers      *prometheus.Desc
+	fpcBandwidth                      *prometheus.Desc
+	fpcBurst                          *prometheus.Desc
+	fpcEnabled                        *prometheus.Desc
+	fpcHostboundQueue                 *prometheus.Desc
+	fpcViolated                       *prometheus.Desc
+	fpcReceived                       *prometheus.Desc
+	fpcDropped                        *prometheus.Desc
+	fpcArrivalRate                    *prometheus.Desc
+	fpcMaxArrivalRate                 *prometheus.Desc
+	fpcDroppedIndividualPolicers      *prometheus.Desc
+	fpcDroppedFlowSuppression         *prometheus.Desc
+	ipcBandwidth                      *prometheus.Desc
+	ipcBurst                          *prometheus.Desc
+	ipcPriority                       *prometheus.Desc
+	ipcRecoverTime                    *prometheus.Desc
+	ipcEnabled                        *prometheus.Desc
+	ipcBypassAggregate                *prometheus.Desc
+	fdcStatus                         *prometheus.Desc
+	fdcDetectionMode                  *prometheus.Desc
+	fdcDetectTime                     *prometheus.Desc
+	fdcRecoverTime                    *prometheus.Desc
+	fdcTimeoutTime                    *prometheus.Desc
+	fdcFALAggLevelSubscriberDM        *prometheus.Desc
+	fdcFALAggLevelSubscriberCM        *prometheus.Desc
+	fdcFALAggLevelSubscriberFR        *prometheus.Desc
+	fdcFALAggLevelLogicalInterfaceDM  *prometheus.Desc
+	fdcFALAggLevelLogicalInterfaceCM  *prometheus.Desc
+	fdcFALAggLevelLogicalInterfaceFR  *prometheus.Desc
+	fdcFALAggLevelPhysicalInterfaceDM *prometheus.Desc
+	fdcFALAggLevelPhysicalInterfaceCM *prometheus.Desc
+	fdcFALAggLevelPhysicalInterfaceFR *prometheus.Desc
 )
 
 func init() {
@@ -127,7 +116,7 @@ func init() {
 	fdcFALAggLevelPhysicalInterfaceFR = prometheus.NewDesc(prefix+"fdc_fal_agg_level_physical_interface_fr", "flow detection configuration flow aggregation level physical interface flow rate", l, nil)
 }
 
-type ddosCollector struct {}
+type ddosCollector struct{}
 
 func NewCollector() collector.RPCCollector { return &ddosCollector{} }
 
@@ -188,6 +177,19 @@ func (c *ddosCollector) Describe(ch chan<- *prometheus.Desc) {
 
 }
 
-func (*ddosCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+func (c *ddosCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	var i results
+	fmt.Printf("inside the collector")
+	err := client.RunCommandAndParse("show ddos-protection protocols", &i)
+	if err != nil {
+		return errors.Wrap(err, "failed to run command 'show ddos-protection protocols'")
+	}
+	c.collectForProtocols(i, ch, labelValues)
+	return nil
+}
 
+func (c *ddosCollector) collectForProtocols(protocols results, ch chan<- prometheus.Metric, labelValues []string) {
+	for _, value := range protocols.DdosProtocolsInformation.DdosProtocolGroup {
+		fmt.Printf("protocol: %s\n", value)
+	}
 }
