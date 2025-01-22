@@ -32,14 +32,14 @@ type statistics struct {
 					Style                  string `xml:"style,attr"`
 					ProtocolStatesLocale   string `xml:"protocol-states-locale"`
 					DdosInstanceStatistics struct {
-						Text                 string `xml:",chardata"`
-						Style                string `xml:"style,attr"`
-						PacketReceived       string `xml:"packet-received"`
-						PacketArrivalRate    string `xml:"packet-arrival-rate"`
-						PacketDropped        string `xml:"packet-dropped"`
-						PacketArrivalRateMax string `xml:"packet-arrival-rate-max"`
-						PacketDroppedOthers  string `xml:"packet-dropped-others"`
-						PacketDroppedFlows   string `xml:"packet-dropped-flows"`
+						Text                 string  `xml:",chardata"`
+						Style                string  `xml:"style,attr"`
+						PacketReceived       float64 `xml:"packet-received"`
+						PacketArrivalRate    string  `xml:"packet-arrival-rate"`
+						PacketDropped        float64 `xml:"packet-dropped"`
+						PacketArrivalRateMax string  `xml:"packet-arrival-rate-max"`
+						PacketDroppedOthers  float64 `xml:"packet-dropped-others"`
+						PacketDroppedFlows   float64 `xml:"packet-dropped-flows"`
 					} `xml:"ddos-instance-statistics"`
 				} `xml:"ddos-instance"`
 			} `xml:"ddos-protocol"`
