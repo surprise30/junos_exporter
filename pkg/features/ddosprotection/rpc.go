@@ -2,7 +2,56 @@ package ddosprotection
 
 import "encoding/xml"
 
-type results struct {
+type statistics struct {
+	XMLName                  xml.Name `xml:"rpc-reply"`
+	Text                     string   `xml:",chardata"`
+	Junos                    string   `xml:"junos,attr"`
+	DdosProtocolsInformation struct {
+		Text                   string  `xml:",chardata"`
+		Xmlns                  string  `xml:"xmlns,attr"`
+		Style                  string  `xml:"style,attr"`
+		TotalPacketTypes       float64 `xml:"total-packet-types"`
+		PacketTypesRcvdPackets float64 `xml:"packet-types-rcvd-packets"`
+		PacketTypesInViolation float64 `xml:"packet-types-in-violation"`
+		DdosProtocolGroup      []struct {
+			Text         string `xml:",chardata"`
+			GroupName    string `xml:"group-name"`
+			DdosProtocol []struct {
+				Text                 string `xml:",chardata"`
+				PacketType           string `xml:"packet-type"`
+				DdosSystemStatistics struct {
+					Text                 string  `xml:",chardata"`
+					Style                string  `xml:"style,attr"`
+					PacketReceived       float64 `xml:"packet-received"`
+					PacketArrivalRate    string  `xml:"packet-arrival-rate"`
+					PacketDropped        float64 `xml:"packet-dropped"`
+					PacketArrivalRateMax string  `xml:"packet-arrival-rate-max"`
+				} `xml:"ddos-system-statistics"`
+				DdosInstance []struct {
+					Text                   string `xml:",chardata"`
+					Style                  string `xml:"style,attr"`
+					ProtocolStatesLocale   string `xml:"protocol-states-locale"`
+					DdosInstanceStatistics struct {
+						Text                 string `xml:",chardata"`
+						Style                string `xml:"style,attr"`
+						PacketReceived       string `xml:"packet-received"`
+						PacketArrivalRate    string `xml:"packet-arrival-rate"`
+						PacketDropped        string `xml:"packet-dropped"`
+						PacketArrivalRateMax string `xml:"packet-arrival-rate-max"`
+						PacketDroppedOthers  string `xml:"packet-dropped-others"`
+						PacketDroppedFlows   string `xml:"packet-dropped-flows"`
+					} `xml:"ddos-instance-statistics"`
+				} `xml:"ddos-instance"`
+			} `xml:"ddos-protocol"`
+		} `xml:"ddos-protocol-group"`
+	} `xml:"ddos-protocols-information"`
+	Cli struct {
+		Text   string `xml:",chardata"`
+		Banner string `xml:"banner"`
+	} `xml:"cli"`
+}
+
+/*type results struct {
 	XMLName                  xml.Name `xml:"rpc-reply"`
 	Text                     string   `xml:",chardata"`
 	Junos                    string   `xml:"junos,attr"`
@@ -126,3 +175,4 @@ type results struct {
 		Banner string `xml:"banner"`
 	} `xml:"cli"`
 }
+*/
