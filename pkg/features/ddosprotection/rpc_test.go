@@ -56,9 +56,51 @@ func TestParseXML(t *testing.T) {
     </cli>
 </rpc-reply>`
 
+	resultParamsData := `<rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.4R2-S3.9/junos">
+    <ddos-protocols-information xmlns="http://xml.juniper.net/junos/23.4R0/junos-jddosd" junos:style="parameters">
+        <total-packet-types>253</total-packet-types>
+        <mod-packet-types>0</mod-packet-types>
+                <ddos-protocol-group>
+            <group-name>PFCP</group-name>
+            <ddos-protocol>
+                <packet-type>aggregate</packet-type>
+                <packet-type-description>Aggregate for all PFCP control traffic</packet-type-description>
+                <ddos-basic-parameters junos:style="aggr-ext">
+                    <policer-bandwidth>6000</policer-bandwidth>
+                    <policer-burst>6001</policer-burst>
+                    <policer-priority>Medium</policer-priority>
+                    <policer-time-recover>300</policer-time-recover>
+                    <policer-enable>Yes</policer-enable>
+                </ddos-basic-parameters>
+                <ddos-instance junos:style="detail">
+                    <protocol-states-locale>Routing Engine</protocol-states-locale>
+                    <ddos-instance-parameters junos:style="re">
+                        <policer-bandwidth>6002</policer-bandwidth>
+                        <policer-burst>6003</policer-burst>
+                        <policer-enable>enabled</policer-enable>
+                    </ddos-instance-parameters>
+                </ddos-instance>
+                <ddos-instance junos:style="detail">
+                    <protocol-states-locale>FPC slot 0</protocol-states-locale>
+                    <ddos-instance-parameters junos:style="fpc">
+                        <policer-bandwidth-scale>100</policer-bandwidth-scale>
+                        <policer-bandwidth>10000</policer-bandwidth>
+                        <policer-burst-scale>80</policer-burst-scale>
+                        <policer-burst>8001</policer-burst>
+                        <policer-enable>enabled</policer-enable>
+                        <hostbound-queue>0</hostbound-queue>
+                    </ddos-instance-parameters>
+                </ddos-instance>
+            </ddos-protocol>
+        </ddos-protocol-group>
+    </ddos-protocols-information>
+    <cli>
+        <banner></banner>
+    </cli>
+</rpc-reply>`
 	var resultStats statistics
+	var resultParams parameters
 
-	//Parse the xml data
 	// Parse the XML data for statistics
 	err := xml.Unmarshal([]byte(resultStatsData), &resultStats)
 	assert.NoError(t, err)
@@ -85,4 +127,31 @@ func TestParseXML(t *testing.T) {
 	assert.Equal(t, "9", resultStats.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceStatistics.PacketArrivalRateMax)
 	assert.Equal(t, float64(10), resultStats.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceStatistics.PacketDroppedOthers)
 	assert.Equal(t, float64(11), resultStats.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceStatistics.PacketDroppedFlows)
+
+	//parse the XML data for Params
+	err = xml.Unmarshal([]byte(resultParamsData), &resultParams)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "PFCP", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].GroupName)
+	assert.Equal(t, "aggregate", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].PacketType)
+	//basic parameters
+	assert.Equal(t, "6000", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosBasicParameters.PolicerBandwidth)
+	assert.Equal(t, "6001", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosBasicParameters.PolicerBurst)
+	assert.Equal(t, "Medium", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosBasicParameters.PolicerPriority)
+	assert.Equal(t, "300", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosBasicParameters.PolicerTimeRecover)
+	assert.Equal(t, "Yes", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosBasicParameters.PolicerEnable)
+
+	//instance parameters
+	assert.Equal(t, "Routing Engine", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[0].ProtocolStatesLocale)
+	assert.Equal(t, "6002", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[0].DdosInstanceParameters.PolicerBandwidth)
+	assert.Equal(t, "6003", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[0].DdosInstanceParameters.PolicerBurst)
+	assert.Equal(t, "enabled", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[0].DdosInstanceParameters.PolicerEnable)
+	assert.Equal(t, "FPC slot 0", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].ProtocolStatesLocale)
+	assert.Equal(t, "100", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.PolicerBandwidthScale)
+	assert.Equal(t, "10000", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.PolicerBandwidth)
+	assert.Equal(t, "80", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.PolicerBurstScale)
+	assert.Equal(t, "8001", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.PolicerBurst)
+	assert.Equal(t, "enabled", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.PolicerEnable)
+	assert.Equal(t, float64(0), resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.HostboundQueue)
+
 }

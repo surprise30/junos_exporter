@@ -51,21 +51,17 @@ type statistics struct {
 	} `xml:"cli"`
 }
 
-/*type results struct {
+type parameters struct {
 	XMLName                  xml.Name `xml:"rpc-reply"`
 	Text                     string   `xml:",chardata"`
 	Junos                    string   `xml:"junos,attr"`
 	DdosProtocolsInformation struct {
-		Text                   string `xml:",chardata"`
-		Xmlns                  string `xml:"xmlns,attr"`
-		Style                  string `xml:"style,attr"`
-		TotalPacketTypes       string `xml:"total-packet-types"`
-		ModPacketTypes         string `xml:"mod-packet-types"`
-		PacketTypesRcvdPackets string `xml:"packet-types-rcvd-packets"`
-		PacketTypesInViolation string `xml:"packet-types-in-violation"`
-		FlowsCurrent           string `xml:"flows-current"`
-		FlowsCumulative        string `xml:"flows-cumulative"`
-		DdosProtocolGroup      []struct {
+		Text              string  `xml:",chardata"`
+		Xmlns             string  `xml:"xmlns,attr"`
+		Style             string  `xml:"style,attr"`
+		TotalPacketTypes  float64 `xml:"total-packet-types"`
+		ModPacketTypes    float64 `xml:"mod-packet-types"`
+		DdosProtocolGroup []struct {
 			Text         string `xml:",chardata"`
 			GroupName    string `xml:"group-name"`
 			DdosProtocol []struct {
@@ -82,68 +78,46 @@ type statistics struct {
 					PolicerPriority        string `xml:"policer-priority"`
 					PolicerBypassAggregate string `xml:"policer-bypass-aggregate"`
 				} `xml:"ddos-basic-parameters"`
-				DdosSystemStatistics struct {
-					Text                      string `xml:",chardata"`
-					Style                     string `xml:"style,attr"`
-					PacketReceived            string `xml:"packet-received"`
-					PacketArrivalRate         string `xml:"packet-arrival-rate"`
-					PacketDropped             string `xml:"packet-dropped"`
-					PacketArrivalRateMax      string `xml:"packet-arrival-rate-max"`
-					FpcViolationCount         string `xml:"fpc-violation-count"`
-					PolicerViolationStartTime struct {
-						Text    string `xml:",chardata"`
-						Seconds string `xml:"seconds,attr"`
-					} `xml:"policer-violation-start-time"`
-					PolicerViolationLastTime struct {
-						Text    string `xml:",chardata"`
-						Seconds string `xml:"seconds,attr"`
-					} `xml:"policer-violation-last-time"`
-					PolicerViolationDuration struct {
-						Text    string `xml:",chardata"`
-						Seconds string `xml:"seconds,attr"`
-					} `xml:"policer-violation-duration"`
-					PolicerViolationCount string `xml:"policer-violation-count"`
-				} `xml:"ddos-system-statistics"`
 				DdosInstance []struct {
 					Text                   string `xml:",chardata"`
 					Style                  string `xml:"style,attr"`
 					ProtocolStatesLocale   string `xml:"protocol-states-locale"`
 					DdosInstanceParameters struct {
-						Text                  string `xml:",chardata"`
-						Style                 string `xml:"style,attr"`
-						PolicerBandwidth      string `xml:"policer-bandwidth"`
-						PolicerBurst          string `xml:"policer-burst"`
-						PolicerEnable         string `xml:"policer-enable"`
-						PolicerBandwidthScale string `xml:"policer-bandwidth-scale"`
-						PolicerBurstScale     string `xml:"policer-burst-scale"`
-						HostboundQueue        string `xml:"hostbound-queue"`
+						Text                  string  `xml:",chardata"`
+						Style                 string  `xml:"style,attr"`
+						PolicerBandwidth      string  `xml:"policer-bandwidth"`
+						PolicerBurst          string  `xml:"policer-burst"`
+						PolicerEnable         string  `xml:"policer-enable"`
+						PolicerBandwidthScale string  `xml:"policer-bandwidth-scale"`
+						PolicerBurstScale     string  `xml:"policer-burst-scale"`
+						HostboundQueue        float64 `xml:"hostbound-queue"`
 					} `xml:"ddos-instance-parameters"`
-					DdosInstanceStatistics struct {
-						Text                      string `xml:",chardata"`
-						Style                     string `xml:"style,attr"`
-						PacketReceived            string `xml:"packet-received"`
-						PacketArrivalRate         string `xml:"packet-arrival-rate"`
-						PacketDropped             string `xml:"packet-dropped"`
-						PacketArrivalRateMax      string `xml:"packet-arrival-rate-max"`
-						PacketDroppedOthers       string `xml:"packet-dropped-others"`
-						PacketDroppedFlows        string `xml:"packet-dropped-flows"`
-						PolicerViolationStartTime struct {
-							Text    string `xml:",chardata"`
-							Seconds string `xml:"seconds,attr"`
-						} `xml:"policer-violation-start-time"`
-						PolicerViolationLastTime struct {
-							Text    string `xml:",chardata"`
-							Seconds string `xml:"seconds,attr"`
-						} `xml:"policer-violation-last-time"`
-						PolicerViolationDuration struct {
-							Text    string `xml:",chardata"`
-							Seconds string `xml:"seconds,attr"`
-						} `xml:"policer-violation-duration"`
-						PolicerViolationCount string `xml:"policer-violation-count"`
-						PacketDroppedProtocol string `xml:"packet-dropped-protocol"`
-						PacketDroppedAggr     string `xml:"packet-dropped-aggr"`
-					} `xml:"ddos-instance-statistics"`
 				} `xml:"ddos-instance"`
+			} `xml:"ddos-protocol"`
+		} `xml:"ddos-protocol-group"`
+	} `xml:"ddos-protocols-information"`
+	Cli struct {
+		Text   string `xml:",chardata"`
+		Banner string `xml:"banner"`
+	} `xml:"cli"`
+}
+
+type flowDetection struct {
+	XMLName                  xml.Name `xml:"rpc-reply"`
+	Text                     string   `xml:",chardata"`
+	Junos                    string   `xml:"junos,attr"`
+	DdosProtocolsInformation struct {
+		Text              string `xml:",chardata"`
+		Xmlns             string `xml:"xmlns,attr"`
+		Style             string `xml:"style,attr"`
+		TotalPacketTypes  string `xml:"total-packet-types"`
+		ModPacketTypes    string `xml:"mod-packet-types"`
+		DdosProtocolGroup []struct {
+			Text         string `xml:",chardata"`
+			GroupName    string `xml:"group-name"`
+			DdosProtocol []struct {
+				Text              string `xml:",chardata"`
+				PacketType        string `xml:"packet-type"`
 				DdosFlowDetection struct {
 					Text                       string `xml:",chardata"`
 					Style                      string `xml:"style,attr"`
@@ -175,4 +149,3 @@ type statistics struct {
 		Banner string `xml:"banner"`
 	} `xml:"cli"`
 }
-*/
