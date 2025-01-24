@@ -98,8 +98,45 @@ func TestParseXML(t *testing.T) {
         <banner></banner>
     </cli>
 </rpc-reply>`
+
+	resultFlowDetectionData := `<rpc-reply xmlns:junos="http://xml.juniper.net/junos/23.4R2-S3.9/junos">
+    <ddos-protocols-information xmlns="http://xml.juniper.net/junos/23.4R0/junos-jddosd" junos:style="parameters">
+        <total-packet-types>253</total-packet-types>
+        <mod-packet-types>0</mod-packet-types>
+          <ddos-protocol-group>
+            <group-name>sctp</group-name>
+            <ddos-protocol>
+                <packet-type>aggregate</packet-type>
+                <ddos-flow-detection junos:style="detail">
+                    <ddos-flow-detection-enabled>off</ddos-flow-detection-enabled>
+                    <detection-mode>Automatic</detection-mode>
+                    <detect-time>3</detect-time>
+                    <log-flows>Yes</log-flows>
+                    <recover-time>60</recover-time>
+                    <timeout-active-flows>No</timeout-active-flows>
+                    <timeout-time>300</timeout-time>
+                    <flow-aggregation-level-states>
+                        <sub-detection-mode>Automatic</sub-detection-mode>
+                        <sub-control-mode>Drop</sub-control-mode>
+                        <sub-bandwidth>10</sub-bandwidth>
+                        <ifl-detection-mode>Automatic</ifl-detection-mode>
+                        <ifl-control-mode>Drop</ifl-control-mode>
+                        <ifl-bandwidth>10</ifl-bandwidth>
+                        <ifd-detection-mode>Automatic</ifd-detection-mode>
+                        <ifd-control-mode>Drop</ifd-control-mode>
+                        <ifd-bandwidth>20000</ifd-bandwidth>
+                    </flow-aggregation-level-states>
+                </ddos-flow-detection>
+            </ddos-protocol>
+        </ddos-protocol-group>
+    </ddos-protocols-information>
+    <cli>
+        <banner></banner>
+    </cli>
+</rpc-reply>`
 	var resultStats statistics
 	var resultParams parameters
+	var FlowDetectionParams flowDetection{}
 
 	// Parse the XML data for statistics
 	err := xml.Unmarshal([]byte(resultStatsData), &resultStats)
@@ -153,5 +190,4 @@ func TestParseXML(t *testing.T) {
 	assert.Equal(t, "8001", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.PolicerBurst)
 	assert.Equal(t, "enabled", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.PolicerEnable)
 	assert.Equal(t, float64(0), resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.HostboundQueue)
-
 }

@@ -1,7 +1,6 @@
 package ddosprotection
 
 import (
-	//"crypto/dsa"
 	"fmt"
 	"strconv"
 	"strings"
@@ -42,6 +41,15 @@ var (
 	parInstancePolicerBandwidthScale *prometheus.Desc
 	parInstancePolicerBusrstScale    *prometheus.Desc
 	parInstanceHostboundQueue        *prometheus.Desc
+	flowTotalPacketsTypes            *prometheus.Desc
+	flowTotalModifiedPacketsTypes    *prometheus.Desc
+	//flowSystemDetectionMode          *prometheus.Desc
+	flowSystemDetectTime                  *prometheus.Desc
+	flowSystemRecoverTime                 *prometheus.Desc
+	flowSystemTimeoutTime                 *prometheus.Desc
+	flowAggregationLevelSubscriber        *prometheus.Desc
+	flowAggregationLevelLogicalInterface  *prometheus.Desc
+	flowAggregationLevelPhysicalInterface *prometheus.Desc
 )
 
 func init() {
@@ -78,6 +86,17 @@ func init() {
 	parInstancePolicerBandwidthScale = prometheus.NewDesc(prefix+"parameters_instance_policer_bandwidth_scale", "[parameters]instance policer bandwidth scale", l, nil)
 	parInstancePolicerBusrstScale = prometheus.NewDesc(prefix+"parameters_instance_policer_burst_scale", "[parameters]instance policer burst scale", l, nil)
 	parInstanceHostboundQueue = prometheus.NewDesc(prefix+"parameters_instance_hostbound_queue", "[parameters]instance hostbound queue", l, nil)
+	l = []string{"target"}
+	flowTotalPacketsTypes = prometheus.NewDesc(prefix+"flow_total_packets_types", "[flow]total amount of packet types for device", l, nil)
+	flowTotalModifiedPacketsTypes = prometheus.NewDesc(prefix+"flow_total_modified_packets_types", "[flow]total amount of modified packet types for device", l, nil)
+	l = append(l, "flow_detection_system", "flow_detection_mode", "flow_log_flows", "flow_timeout_flows")
+	flowSystemDetectTime = prometheus.NewDesc(prefix+"flow_system_detection_time", "[flow]system detection time", l, nil)
+	flowSystemRecoverTime = prometheus.NewDesc(prefix+"flow_system_recover_time", "[flow]system recover time", l, nil)
+	flowSystemTimeoutTime = prometheus.NewDesc(prefix+"flow_system_timeout_time", "[flow]system timeout time", l, nil)
+	l = []string{"target", "protocol_group_name", "protocol_packet_type", "detection_mode", "control_mode"}
+	flowAggregationLevelSubscriber = prometheus.NewDesc(prefix+"flow_aggregation_level_subscriber", "[flow]aggregation level subscriber", l, nil)
+	flowAggregationLevelLogicalInterface = prometheus.NewDesc(prefix+"flow_aggregation_level_logical_interface", "[flow]aggregation level logical interface", l, nil)
+	flowAggregationLevelPhysicalInterface = prometheus.NewDesc(prefix+"flow_aggregation_level_physical_interface", "[flow]aggregation level physical interface", l, nil)
 }
 
 type ddosCollector struct{}
@@ -116,6 +135,14 @@ func (c *ddosCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- parInstancePolicerBandwidthScale
 	ch <- parInstancePolicerBusrstScale
 	ch <- parInstanceHostboundQueue
+	ch <- flowTotalPacketsTypes
+	ch <- flowTotalModifiedPacketsTypes
+	ch <- flowSystemDetectTime
+	ch <- flowSystemRecoverTime
+	ch <- flowSystemTimeoutTime
+	ch <- flowAggregationLevelSubscriber
+	ch <- flowAggregationLevelLogicalInterface
+	ch <- flowAggregationLevelPhysicalInterface
 }
 func (c *ddosCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
 	var s statistics
@@ -123,13 +150,18 @@ func (c *ddosCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show ddos-protection protocols statistics'")
 	}
-	//c.collectStatistics(s, ch, labelValues)
 	var p parameters
 	err = client.RunCommandAndParse("show ddos-protection protocols parameters", &p)
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show ddos-protection protocols parameters'")
 	}
-	c.collectParameters(p, ch, labelValues)
+	var f flowDetection
+	err = client.RunCommandAndParse("show ddos-protection protocols flow-detection", &f)
+	if err != nil {
+		return errors.Wrap(err, "failed to run command 'show ddos-protection protocols flow-detection'")
+	}
+	c.collectFlowDetection(f, ch, labelValues)
+	c.collectFlowDetectionAggregationLevel(f, ch, labelValues)
 	return nil
 }
 
@@ -221,6 +253,33 @@ func (c *ddosCollector) collectParameters(p parameters, ch chan<- prometheus.Met
 	}
 }
 
+func (c *ddosCollector) collectFlowDetection(f flowDetection, ch chan<- prometheus.Metric, labelValues []string) {
+	ch <- prometheus.MustNewConstMetric(flowTotalPacketsTypes, prometheus.GaugeValue, f.DdosProtocolsInformation.TotalPacketTypes, labelValues...)
+	ch <- prometheus.MustNewConstMetric(flowTotalModifiedPacketsTypes, prometheus.GaugeValue, f.DdosProtocolsInformation.ModPacketTypes, labelValues...)
+	for _, protocolGroup := range f.DdosProtocolsInformation.DdosProtocolGroup {
+		for _, protocol := range protocolGroup.DdosProtocol {
+			l := append(labelValues, protocol.DdosFlowDetection.DdosFlowDetectionEnabled, protocol.DdosFlowDetection.DetectionMode, protocol.DdosFlowDetection.LogFlows, protocol.DdosFlowDetection.TimeoutActiveFlows)
+			ch <- prometheus.MustNewConstMetric(flowSystemDetectTime, prometheus.GaugeValue, protocol.DdosFlowDetection.DetectTime, l...)
+			ch <- prometheus.MustNewConstMetric(flowSystemRecoverTime, prometheus.GaugeValue, protocol.DdosFlowDetection.RecoverTime, l...)
+			ch <- prometheus.MustNewConstMetric(flowSystemTimeoutTime, prometheus.GaugeValue, protocol.DdosFlowDetection.TimeoutTime, l...)
+		}
+	}
+}
+
+func (c *ddosCollector) collectFlowDetectionAggregationLevel(f flowDetection, ch chan<- prometheus.Metric, labelValues []string) {
+	for _, protocolGroup := range f.DdosProtocolsInformation.DdosProtocolGroup {
+		l := append(labelValues, protocolGroup.GroupName)
+		for _, protocol := range protocolGroup.DdosProtocol {
+			lSubscriber := append(l, protocol.PacketType, protocol.DdosFlowDetection.FlowAggregationLevelStates.SubDetectionMode, protocol.DdosFlowDetection.FlowAggregationLevelStates.SubControlMode)
+			ch <- prometheus.MustNewConstMetric(flowAggregationLevelSubscriber, prometheus.GaugeValue, protocol.DdosFlowDetection.FlowAggregationLevelStates.SubBandwidth, lSubscriber...)
+			lLogical := append(l, protocol.PacketType, protocol.DdosFlowDetection.FlowAggregationLevelStates.IflDetectionMode, protocol.DdosFlowDetection.FlowAggregationLevelStates.IflControlMode)
+			ch <- prometheus.MustNewConstMetric(flowAggregationLevelLogicalInterface, prometheus.GaugeValue, protocol.DdosFlowDetection.FlowAggregationLevelStates.IflBandwidth, lLogical...)
+			lPhysical := append(l, protocol.PacketType, protocol.DdosFlowDetection.FlowAggregationLevelStates.IflDetectionMode, protocol.DdosFlowDetection.FlowAggregationLevelStates.IfdControlMode)
+			ch <- prometheus.MustNewConstMetric(flowAggregationLevelPhysicalInterface, prometheus.GaugeValue, protocol.DdosFlowDetection.FlowAggregationLevelStates.IfdBandwidth, lPhysical...)
+		}
+	}
+}
+
 func convertDifferentStringsToFloat(value string) float64 {
 	parsed := strings.TrimSuffix(value, " bps")
 	parsed = strings.TrimSuffix(parsed, " packets")
@@ -231,6 +290,7 @@ func convertDifferentStringsToFloat(value string) float64 {
 	number, err := strconv.Atoi(parsed)
 	if err != nil {
 		fmt.Println("Error:", err)
+		fmt.Printf("the parsed string is %s\n", parsed)
 		//@Oli - how to properly signal that there was an error parsing the data ?
 		return 0.0000000000001
 	}

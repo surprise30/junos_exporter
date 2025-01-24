@@ -107,11 +107,11 @@ type flowDetection struct {
 	Text                     string   `xml:",chardata"`
 	Junos                    string   `xml:"junos,attr"`
 	DdosProtocolsInformation struct {
-		Text              string `xml:",chardata"`
-		Xmlns             string `xml:"xmlns,attr"`
-		Style             string `xml:"style,attr"`
-		TotalPacketTypes  string `xml:"total-packet-types"`
-		ModPacketTypes    string `xml:"mod-packet-types"`
+		Text              string  `xml:",chardata"`
+		Xmlns             string  `xml:"xmlns,attr"`
+		Style             string  `xml:"style,attr"`
+		TotalPacketTypes  float64 `xml:"total-packet-types"`
+		ModPacketTypes    float64 `xml:"mod-packet-types"`
 		DdosProtocolGroup []struct {
 			Text         string `xml:",chardata"`
 			GroupName    string `xml:"group-name"`
@@ -119,26 +119,26 @@ type flowDetection struct {
 				Text              string `xml:",chardata"`
 				PacketType        string `xml:"packet-type"`
 				DdosFlowDetection struct {
-					Text                       string `xml:",chardata"`
-					Style                      string `xml:"style,attr"`
-					DdosFlowDetectionEnabled   string `xml:"ddos-flow-detection-enabled"`
-					DetectionMode              string `xml:"detection-mode"`
-					DetectTime                 string `xml:"detect-time"`
-					LogFlows                   string `xml:"log-flows"`
-					RecoverTime                string `xml:"recover-time"`
-					TimeoutActiveFlows         string `xml:"timeout-active-flows"`
-					TimeoutTime                string `xml:"timeout-time"`
+					Text                       string  `xml:",chardata"`
+					Style                      string  `xml:"style,attr"`
+					DdosFlowDetectionEnabled   string  `xml:"ddos-flow-detection-enabled"`
+					DetectionMode              string  `xml:"detection-mode"`
+					DetectTime                 float64 `xml:"detect-time"`
+					LogFlows                   string  `xml:"log-flows"`
+					RecoverTime                float64 `xml:"recover-time"`
+					TimeoutActiveFlows         string  `xml:"timeout-active-flows"`
+					TimeoutTime                float64 `xml:"timeout-time"`
 					FlowAggregationLevelStates struct {
-						Text             string `xml:",chardata"`
-						SubDetectionMode string `xml:"sub-detection-mode"`
-						SubControlMode   string `xml:"sub-control-mode"`
-						SubBandwidth     string `xml:"sub-bandwidth"`
-						IflDetectionMode string `xml:"ifl-detection-mode"`
-						IflControlMode   string `xml:"ifl-control-mode"`
-						IflBandwidth     string `xml:"ifl-bandwidth"`
-						IfdDetectionMode string `xml:"ifd-detection-mode"`
-						IfdControlMode   string `xml:"ifd-control-mode"`
-						IfdBandwidth     string `xml:"ifd-bandwidth"`
+						Text             string  `xml:",chardata"`
+						SubDetectionMode string  `xml:"sub-detection-mode"`
+						SubControlMode   string  `xml:"sub-control-mode"`
+						SubBandwidth     float64 `xml:"sub-bandwidth"`
+						IflDetectionMode string  `xml:"ifl-detection-mode"`
+						IflControlMode   string  `xml:"ifl-control-mode"`
+						IflBandwidth     float64 `xml:"ifl-bandwidth"`
+						IfdDetectionMode string  `xml:"ifd-detection-mode"`
+						IfdControlMode   string  `xml:"ifd-control-mode"`
+						IfdBandwidth     float64 `xml:"ifd-bandwidth"`
 					} `xml:"flow-aggregation-level-states"`
 				} `xml:"ddos-flow-detection"`
 			} `xml:"ddos-protocol"`
