@@ -110,21 +110,21 @@ func TestParseXML(t *testing.T) {
                 <ddos-flow-detection junos:style="detail">
                     <ddos-flow-detection-enabled>off</ddos-flow-detection-enabled>
                     <detection-mode>Automatic</detection-mode>
-                    <detect-time>3</detect-time>
+                    <detect-time>4</detect-time>
                     <log-flows>Yes</log-flows>
-                    <recover-time>60</recover-time>
+                    <recover-time>80</recover-time>
                     <timeout-active-flows>No</timeout-active-flows>
-                    <timeout-time>300</timeout-time>
+                    <timeout-time>400</timeout-time>
                     <flow-aggregation-level-states>
                         <sub-detection-mode>Automatic</sub-detection-mode>
                         <sub-control-mode>Drop</sub-control-mode>
-                        <sub-bandwidth>10</sub-bandwidth>
+                        <sub-bandwidth>11</sub-bandwidth>
                         <ifl-detection-mode>Automatic</ifl-detection-mode>
                         <ifl-control-mode>Drop</ifl-control-mode>
-                        <ifl-bandwidth>10</ifl-bandwidth>
+                        <ifl-bandwidth>12</ifl-bandwidth>
                         <ifd-detection-mode>Automatic</ifd-detection-mode>
                         <ifd-control-mode>Drop</ifd-control-mode>
-                        <ifd-bandwidth>20000</ifd-bandwidth>
+                        <ifd-bandwidth>20001</ifd-bandwidth>
                     </flow-aggregation-level-states>
                 </ddos-flow-detection>
             </ddos-protocol>
@@ -136,7 +136,7 @@ func TestParseXML(t *testing.T) {
 </rpc-reply>`
 	var resultStats statistics
 	var resultParams parameters
-	var FlowDetectionParams flowDetection{}
+	var resultFlowDetection flowDetection
 
 	// Parse the XML data for statistics
 	err := xml.Unmarshal([]byte(resultStatsData), &resultStats)
@@ -165,13 +165,13 @@ func TestParseXML(t *testing.T) {
 	assert.Equal(t, float64(10), resultStats.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceStatistics.PacketDroppedOthers)
 	assert.Equal(t, float64(11), resultStats.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceStatistics.PacketDroppedFlows)
 
-	//parse the XML data for Params
+	//parse the XML data for parameters
 	err = xml.Unmarshal([]byte(resultParamsData), &resultParams)
 	assert.NoError(t, err)
 
+	//basic parameters
 	assert.Equal(t, "PFCP", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].GroupName)
 	assert.Equal(t, "aggregate", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].PacketType)
-	//basic parameters
 	assert.Equal(t, "6000", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosBasicParameters.PolicerBandwidth)
 	assert.Equal(t, "6001", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosBasicParameters.PolicerBurst)
 	assert.Equal(t, "Medium", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosBasicParameters.PolicerPriority)
@@ -190,4 +190,29 @@ func TestParseXML(t *testing.T) {
 	assert.Equal(t, "8001", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.PolicerBurst)
 	assert.Equal(t, "enabled", resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.PolicerEnable)
 	assert.Equal(t, float64(0), resultParams.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosInstance[1].DdosInstanceParameters.HostboundQueue)
+
+	//parse the XML data for flow detection
+	err = xml.Unmarshal([]byte(resultFlowDetectionData), &resultFlowDetection)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "sctp", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].GroupName)
+	assert.Equal(t, "aggregate", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].PacketType)
+
+	assert.Equal(t, float64(4), resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.DetectTime)
+	assert.Equal(t, float64(80), resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.RecoverTime)
+	assert.Equal(t, float64(400), resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.TimeoutTime)
+	assert.Equal(t, "Automatic", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.DetectionMode)
+	assert.Equal(t, "Yes", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.LogFlows)
+	assert.Equal(t, "No", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.TimeoutActiveFlows)
+
+	//flow aggregate level states
+	assert.Equal(t, "Automatic", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.FlowAggregationLevelStates.SubDetectionMode)
+	assert.Equal(t, "Drop", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.FlowAggregationLevelStates.SubControlMode)
+	assert.Equal(t, float64(11), resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.FlowAggregationLevelStates.SubBandwidth)
+	assert.Equal(t, "Automatic", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.FlowAggregationLevelStates.IflDetectionMode)
+	assert.Equal(t, "Drop", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.FlowAggregationLevelStates.IflControlMode)
+	assert.Equal(t, float64(12), resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.FlowAggregationLevelStates.IflBandwidth)
+	assert.Equal(t, "Automatic", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.FlowAggregationLevelStates.IfdDetectionMode)
+	assert.Equal(t, "Drop", resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.FlowAggregationLevelStates.IfdControlMode)
+	assert.Equal(t, float64(20001), resultFlowDetection.DdosProtocolsInformation.DdosProtocolGroup[0].DdosProtocol[0].DdosFlowDetection.FlowAggregationLevelStates.IfdBandwidth)
 }
