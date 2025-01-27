@@ -14,36 +14,35 @@ import (
 const prefix string = "junos_ddos_protection_"
 
 var (
-	totalPacketsTypes                *prometheus.Desc
-	packetTypesReceivedPackets       *prometheus.Desc
-	packetTypesInViolations          *prometheus.Desc
-	systemPacketsReceived            *prometheus.Desc
-	systemPacketsArrivalRate         *prometheus.Desc
-	systemPacketsDropped             *prometheus.Desc
-	systemPacketsArrivalRateMax      *prometheus.Desc
-	instancePacketsReceived          *prometheus.Desc
-	instancePacketsArrivalRate       *prometheus.Desc
-	instancePacketsDropped           *prometheus.Desc
-	instancePacketsArrivalRateMax    *prometheus.Desc
-	instancePacketsDroppedOthers     *prometheus.Desc
-	instancePacketsDroppedFlows      *prometheus.Desc
-	parTotalPacketsTypes             *prometheus.Desc
-	parTotalModified                 *prometheus.Desc
-	parBasicPolicerBandwidth         *prometheus.Desc
-	parBasicPolicerBurst             *prometheus.Desc
-	parBasicPolicerTimeRecover       *prometheus.Desc
-	parBasicPolicerEnable            *prometheus.Desc
-	parBasicPolicerPriority          *prometheus.Desc
-	parBasicBypassAggregate          *prometheus.Desc
-	parInstancePolicerBandwidth      *prometheus.Desc
-	parInstancePolicerBurst          *prometheus.Desc
-	parInstancePolicerEnable         *prometheus.Desc
-	parInstancePolicerBandwidthScale *prometheus.Desc
-	parInstancePolicerBusrstScale    *prometheus.Desc
-	parInstanceHostboundQueue        *prometheus.Desc
-	flowTotalPacketsTypes            *prometheus.Desc
-	flowTotalModifiedPacketsTypes    *prometheus.Desc
-	//flowSystemDetectionMode          *prometheus.Desc
+	totalPacketsTypes                     *prometheus.Desc
+	packetTypesReceivedPackets            *prometheus.Desc
+	packetTypesInViolations               *prometheus.Desc
+	systemPacketsReceived                 *prometheus.Desc
+	systemPacketsArrivalRate              *prometheus.Desc
+	systemPacketsDropped                  *prometheus.Desc
+	systemPacketsArrivalRateMax           *prometheus.Desc
+	instancePacketsReceived               *prometheus.Desc
+	instancePacketsArrivalRate            *prometheus.Desc
+	instancePacketsDropped                *prometheus.Desc
+	instancePacketsArrivalRateMax         *prometheus.Desc
+	instancePacketsDroppedOthers          *prometheus.Desc
+	instancePacketsDroppedFlows           *prometheus.Desc
+	parTotalPacketsTypes                  *prometheus.Desc
+	parTotalModified                      *prometheus.Desc
+	parBasicPolicerBandwidth              *prometheus.Desc
+	parBasicPolicerBurst                  *prometheus.Desc
+	parBasicPolicerTimeRecover            *prometheus.Desc
+	parBasicPolicerEnable                 *prometheus.Desc
+	parBasicPolicerPriority               *prometheus.Desc
+	parBasicBypassAggregate               *prometheus.Desc
+	parInstancePolicerBandwidth           *prometheus.Desc
+	parInstancePolicerBurst               *prometheus.Desc
+	parInstancePolicerEnable              *prometheus.Desc
+	parInstancePolicerBandwidthScale      *prometheus.Desc
+	parInstancePolicerBusrstScale         *prometheus.Desc
+	parInstanceHostboundQueue             *prometheus.Desc
+	flowTotalPacketsTypes                 *prometheus.Desc
+	flowTotalModifiedPacketsTypes         *prometheus.Desc
 	flowSystemDetectTime                  *prometheus.Desc
 	flowSystemRecoverTime                 *prometheus.Desc
 	flowSystemTimeoutTime                 *prometheus.Desc
