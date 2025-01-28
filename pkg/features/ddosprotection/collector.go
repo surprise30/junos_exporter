@@ -149,13 +149,13 @@ func (c *ddosCollector) Collect(client collector.Client, ch chan<- prometheus.Me
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show ddos-protection protocols statistics'")
 	}
-	//c.collectStatistics(s, ch, labelValues)
+	c.collectStatistics(s, ch, labelValues)
 	var p parameters
 	err = client.RunCommandAndParse("show ddos-protection protocols parameters", &p)
 	if err != nil {
 		return errors.Wrap(err, "failed to run command 'show ddos-protection protocols parameters'")
 	}
-	//c.collectParameters(p, ch, labelValues)
+	c.collectParameters(p, ch, labelValues)
 	var f flowDetection
 	err = client.RunCommandAndParse("show ddos-protection protocols flow-detection", &f)
 	if err != nil {
