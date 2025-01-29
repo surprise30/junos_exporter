@@ -12,7 +12,6 @@ import (
 
 const prefix string = "junos_ddos_protection_"
 
-var isFDEnabled = false
 var (
 	totalPacketsTypes                     *prometheus.Desc
 	packetTypesReceivedPackets            *prometheus.Desc
@@ -144,6 +143,7 @@ func (c *ddosCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- flowAggregationLevelPhysicalInterface
 }
 func (c *ddosCollector) Collect(client collector.Client, ch chan<- prometheus.Metric, labelValues []string) error {
+	var isFDEnabled = false
 	var s statistics
 	err := client.RunCommandAndParse("show ddos-protection protocols statistics", &s)
 	if err != nil {
