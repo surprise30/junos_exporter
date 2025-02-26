@@ -23,11 +23,9 @@ import (
 	"go.opentelemetry.io/otel/codes"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/czerwonk/junos_exporter/internal/config"
 )
 
-const version string = "0.13.0"
+const version string = "0.14.0"
 
 var (
 	showVersion                 = flag.Bool("version", false, "Print version information.")
@@ -90,6 +88,7 @@ var (
 	macsecEnabled               = flag.Bool("macsec.enabled", true, "Scrape MACSec metrics")
 	arpEnabled                  = flag.Bool("arps.enabled", true, "Scrape ARP metrics")
 	poeEnabled                  = flag.Bool("poe.enabled", true, "Scrape PoE metrics")
+	krtEnabled                  = flag.Bool("krt.enabled", false, "Scrape KRT queue metrics")
 	cfg                         *config.Config
 	devices                     []*connector.Device
 	connManager                 *connector.SSHConnectionManager
@@ -264,6 +263,7 @@ func loadConfigFromFlags() *config.Config {
 	f.MACSec = *macsecEnabled
 	f.ARP = *arpEnabled
 	f.Poe = *poeEnabled
+	f.KRT = *krtEnabled
 	return c
 }
 
@@ -336,9 +336,10 @@ func handleMetricsRequest(w http.ResponseWriter, r *http.Request) {
 
 	logicalSystem := r.URL.Query().Get("ls")
 	if !cfg.LSEnabled && logicalSystem != "" {
+		err := fmt.Errorf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem)
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		http.Error(w, fmt.Sprintf("Logical systems not enabled but the logical system '%s' in parameters", logicalSystem), 400)
+		http.Error(w, err.Error(), 400)
 		return
 	}
 
